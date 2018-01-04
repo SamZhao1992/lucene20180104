@@ -8,6 +8,7 @@ import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
@@ -36,7 +37,7 @@ public class IndexManagerTest {
         List<Document> documentList = new ArrayList<Document>();
 
         //指定文件所在目录
-        File dir = new File("E:\\Code\\study\\lucene\\lucene20180104\\searchsource");
+        File dir = new File("F:\\IdeaProjects\\solr\\lucene20180104\\searchsource");
         //循环文件夹 取出文件
         for (File file : dir.listFiles()) {
             //文件名
@@ -87,7 +88,7 @@ public class IndexManagerTest {
         Analyzer analyzer = new IKAnalyzer();
 
         //指定索引和文档的存储目录
-        Directory directory = FSDirectory.open(new File("E:\\Code\\study\\lucene\\lucene20180104\\directory"));
+        Directory directory = FSDirectory.open(new File("F:\\IdeaProjects\\solr\\lucene20180104\\directory"));
 
         //创建写对象的初始化对象
         IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_3, analyzer);
@@ -105,5 +106,66 @@ public class IndexManagerTest {
         //关闭
         indexWriter.close();
 
+    }
+
+    /**
+     * 索引删除
+     * @throws Exception
+     */
+    @Test
+    public void testIndexDelete() throws Exception {
+        //创建分词器
+        Analyzer analyzer = new IKAnalyzer();
+        //指定索引和文档的存储目录
+        Directory directory = FSDirectory.open(new File("F:\\IdeaProjects\\solr\\lucene20180104\\directory"));
+        //创建写对象的初始化对象
+        IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_3, analyzer);
+        //创建索引的写入对象
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+        //删除全部
+//        indexWriter.deleteAll();
+
+        //根据名称进行删除
+        //Term  词元 就是一个词 第一个参数：域名 第二个参数：要删除含有此关键字的词
+        indexWriter.deleteDocuments(new Term("fileName", "apache"));
+
+
+        //提交
+        indexWriter.commit();
+        //关闭
+        indexWriter.close();
+    }
+
+    /**
+     * 索引更新
+     * @throws Exception
+     */
+    @Test
+    public void testIndexUpdate() throws Exception {
+        //创建分词器
+        Analyzer analyzer = new IKAnalyzer();
+        //指定索引和文档的存储目录
+        Directory directory = FSDirectory.open(new File("F:\\IdeaProjects\\solr\\lucene20180104\\directory"));
+        //创建写对象的初始化对象
+        IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_3, analyzer);
+        //创建索引的写入对象
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+
+        //根据文件名称进行更新
+        Term term = new Term("fileName", "web");
+        //更新的对象
+        Document document = new Document();
+
+        document.add(new TextField("fileName", "xxxxxx", Field.Store.YES));
+        document.add(new TextField("fileContext", "传智播客 Think in java such that the  nihao ma ", Field.Store.NO));
+        document.add(new LongField("fileSize", 100L, Field.Store.YES));
+
+        //更新
+        indexWriter.updateDocument(term, document);
+
+        //提交
+        indexWriter.commit();
+        //关闭
+        indexWriter.close();
     }
 }
